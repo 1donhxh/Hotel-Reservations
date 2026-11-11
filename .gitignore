@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.vscode/
+build/
+dist/
+*.spec
+hotel_data.json
+bookings_report.csv
+occupancy_report.csv
+.DS_Store
