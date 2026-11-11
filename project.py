@@ -14,6 +14,28 @@ from tkinter import ttk, messagebox
 # =====================================================================
 # SECTION 1: DATA LAYER & LOGIC (Darien Henry)
 # =====================================================================
+# ---- Data structures (all lists of dicts) --------------------------
+rooms: list = []      
+guests: list = []      
+staff: list = []      
+bookings: list = []      
+
+
+VALID_ROOM_TYPES = {"Single", "Double", "Suite"}
+VALID_STATUSES = {"Available", "Occupied", "Under Maintenance"}
+VALID_ROLES = {"Receptionist", "Housekeeping", "Manager"}
+
+
+# ---- File path resolution -----------------------------------------
+def get_data_path(filename: str = "hotel_data.json") -> str:
+    if getattr(sys, "frozen", False):
+        base = os.path.dirname(sys.executable)
+    else:
+        base = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base, filename)
+
+
+# ---- Persistence ---------------------------------------------------
 
 
 # =====================================================================
