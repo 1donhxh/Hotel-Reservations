@@ -36,6 +36,81 @@ def get_data_path(filename: str = "hotel_data.json") -> str:
 
 
 # ---- Persistence ---------------------------------------------------
+def load_data() -> None:
+    global rooms, guests, staff, bookings
+    path = get_data_path()
+    if not os.path.exists(path):
+        return
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            payload = json.load(f)
+        rooms = payload.get("rooms", [])
+        guests = payload.get("guests", [])
+        staff = payload.get("staff", [])
+        bookings = payload.get("bookings", [])
+    except (json.JSONDecodeError, OSError, ValueError) as e:
+        print(f"[load_data] could not read data file: {e}")
+        rooms, guests, staff, bookings = [], [], [], []
+
+
+def save_data() -> bool:
+    payload = {"rooms": rooms, "guests": guests, "staff": staff, "bookings": bookings}
+    try:
+        with open(get_data_path(), "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2)
+        return True
+    except OSError as e:
+        print(f"[save_data] could not write data file: {e}")
+        return False
+
+
+# ---- Auto-ID generation -------------------------------------------
+def next_id(prefix: str, items: list, key: str) -> str:
+    highest = 0
+    for item in items:
+        ident = item.get(key, "")
+        if ident.startswith(prefix):
+            try:
+                number = int(ident[len(prefix):])
+                if number > highest:
+                    highest = number
+            except ValueError:
+                continue
+    return f"{prefix}{highest + 1:03d}"
+
+
+# ---- Lookup helpers -----------------------------------------------
+def find_room(room_id: str):
+    for r in rooms:
+        if r["room_id"] == room_id:
+            return r
+    return None
+
+
+def find_guest(guest_id: str):
+    for g in guests:
+        if g["guest_id"] == guest_id:
+            return g
+    return None
+
+
+def find_booking(booking_id: str):
+    for b in bookings:
+        if b["booking_id"] == booking_id:
+            return b
+    return None
+
+
+def find_active_booking_for_room(room_id: str):
+    for b in bookings:
+        if b["room_id"] == room_id:
+            room = find_room(room_id)
+            if room and room["status"] == "Occupied":
+                return b
+    return None
+
+
+# ---- Booking logic -------------------------------------------------
 
 
 # =====================================================================
