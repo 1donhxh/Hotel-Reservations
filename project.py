@@ -111,6 +111,82 @@ def find_active_booking_for_room(room_id: str):
 
 
 # ---- Booking logic -------------------------------------------------
+def calculate_booking_cost(room_id: str, check_in: str, check_out: str):
+    room = find_room(room_id)
+    if room is None:
+        raise ValueError("Room not found.")
+    try:
+        d_in = datetime.strptime(check_in, "%Y-%m-%d")
+        d_out = datetime.strptime(check_out, "%Y-%m-%d")
+    except ValueError:
+        raise ValueError("Dates must be in YYYY-MM-DD format.")
+    if d_out <= d_in:
+        raise ValueError("Check-out must be after check-in.")
+    nights = (d_out - d_in).days
+    total = round(nights * float(room["rate"]), 2)
+    return nights, total
+
+
+def create_booking(guest_id: str, room_id: str, check_in: str, check_out: str):
+    if find_guest(guest_id) is None:
+        raise ValueError("Guest not found.")
+    room = find_room(room_id)
+    if room is None:
+        raise ValueError("Room not found.")
+    if room["status"] != "Available":
+        raise ValueError(f"Room {room_id} is not available (status: {room['status']}).")
+    nights, total = calculate_booking_cost(room_id, check_in, check_out)
+    booking = {
+        "booking_id": next_id("B", bookings, "booking_id"),
+        "guest_id": guest_id,
+        "room_id": room_id,
+        "check_in": check_in,
+        "check_out": check_out,
+        "nights": nights,
+        "total": total,
+    }
+    bookings.append(booking)
+    room["status"] = "Occupied"
+    save_data()
+    return booking
+
+
+def check_out(room_id: str):
+    room = find_room(room_id)
+    if room is None:
+        raise ValueError("Room not found.")
+    if room["status"] != "Occupied":
+        raise ValueError(f"Room {room_id} is not currently occupied.")
+    active = find_active_booking_for_room(room_id)
+    if active is None:
+        raise ValueError("No active booking found for this room.")
+    room["status"] = "Available"
+    save_data()
+    return active
+
+
+def update_room_status(room_id: str, new_status: str):
+    if new_status not in VALID_STATUSES:
+        raise ValueError(f"Invalid status. Must be one of: {', '.join(VALID_STATUSES)}")
+    room = find_room(room_id)
+    if room is None:
+        raise ValueError("Room not found.")
+    if room["status"] == new_status:
+        raise ValueError(f"Room {room_id} is already marked as '{new_status}'.")
+       
+    # --- MOVED THIS CHECK UP ---
+    if new_status == "Available" and find_active_booking_for_room(room_id):
+        raise ValueError("Cannot mark as Available. Room has an active booking.")
+       
+    # --- ADDED THIS CHECK (Maintenance can't be set if occupied) ---
+    if new_status == "Under Maintenance" and room["status"] == "Occupied":
+        raise ValueError(f"Cannot set to Maintenance. Room {room_id} is currently Occupied.")
+    # ----------------------------
+
+
+    room["status"] = new_status
+    save_data()
+    return True
 
 
 # =====================================================================
