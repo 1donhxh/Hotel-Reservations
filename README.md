@@ -90,7 +90,7 @@ The application uses Tkinter frames for the welcome, login and dashboard screens
 
 **Requirements:** Python 3 with Tkinter installed and permission to write files in the application folder. No external Python packages are needed.
 
-1. Place `hotel_reservations_red_remove_buttons.py` in a folder on your computer. If continuing an existing installation, keep its `hotel_data.json` alongside it.
+1. Place `CNS1001_Project2_Group5_project.py` in a folder on your computer. If continuing an existing installation, keep its `hotel_data.json` alongside it.
 2. Open a terminal in that folder and run:
 
    ```bash
