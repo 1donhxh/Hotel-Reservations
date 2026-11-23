@@ -352,266 +352,263 @@ def exit_to_welcome(controller):
 # POPUP FORMS (UNCOMMENT WHEN SECTION 1 FUNCTIONS ARE READY)
 # =====================================================================
 
-'''# ---- 1. New Booking Popup (Uses existing create_booking & calculate_booking_cost) ----
- class NewBookingPopup(tk.Toplevel):
-     def __init__(self, parent, refresh_callback):
-         super().__init__(parent)
-         self.title("New Reservation")
-         self.geometry("400x360")
-         self.config(background="#81C1EB", padx=20, pady=20)
-         self.resizable(False, False)
-         self.grab_set()
-         self.refresh_callback = refresh_callback
+# ---- 1. New Booking Popup (Uses existing create_booking & calculate_booking_cost) ----
+class NewBookingPopup(tk.Toplevel):
+    def __init__(self, parent, refresh_callback):
+        super().__init__(parent)
+        self.title("New Reservation")
+        self.geometry("400x360")
+        self.config(background="#81C1EB", padx=20, pady=20)
+        self.resizable(False, False)
+        self.grab_set()
+        self.refresh_callback = refresh_callback
 
-         tk.Label(self, text="Create New Booking", font=("Arial", 16, "bold"), bg="#81C1EB").pack(pady=(0, 15))
+        tk.Label(self, text="Create New Booking", font=("Arial", 16, "bold"), bg="#81C1EB").pack(pady=(0, 15))
 
-         form = tk.Frame(self, bg="#81C1EB")
-         form.pack(fill="x")
-         form.columnconfigure(1, weight=1)
+        form = tk.Frame(self, bg="#81C1EB")
+        form.pack(fill="x")
+        form.columnconfigure(1, weight=1)
 
-         tk.Label(form, text="Guest ID:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=0, column=0, sticky="w", pady=5)
-         guest_choices = [f"{g['guest_id']} - {g['name']}" for g in guests]
-         self.guest_cb = ttk.Combobox(form, values=guest_choices, state="readonly")
-         self.guest_cb.grid(row=0, column=1, sticky="ew", pady=5, padx=(10, 0))
+        tk.Label(form, text="Guest ID:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=0, column=0, sticky="w", pady=5)
+        guest_choices = [f"{g['guest_id']} - {g['name']}" for g in guests]
+        self.guest_cb = ttk.Combobox(form, values=guest_choices, state="readonly")
+        self.guest_cb.grid(row=0, column=1, sticky="ew", pady=5, padx=(10, 0))
 
-         tk.Label(form, text="Available Room:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=1, column=0, sticky="w", pady=5)
-         room_choices = [f"{r['room_id']} ({r['type']} - ${r['rate']})" for r in rooms if r["status"] == "Available"]
-         self.room_cb = ttk.Combobox(form, values=room_choices, state="readonly")
-         self.room_cb.grid(row=1, column=1, sticky="ew", pady=5, padx=(10, 0))
+        tk.Label(form, text="Available Room:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=1, column=0, sticky="w", pady=5)
+        room_choices = [f"{r['room_id']} ({r['type']} - ${r['rate']})" for r in rooms if r["status"] == "Available"]
+        self.room_cb = ttk.Combobox(form, values=room_choices, state="readonly")
+        self.room_cb.grid(row=1, column=1, sticky="ew", pady=5, padx=(10, 0))
 
-         tk.Label(form, text="Check-In (YYYY-MM-DD):", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=2, column=0, sticky="w", pady=5)
-         self.checkin_entry = tk.Entry(form)
-         self.checkin_entry.grid(row=2, column=1, sticky="ew", pady=5, padx=(10, 0))
+        tk.Label(form, text="Check-In (YYYY-MM-DD):", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=2, column=0, sticky="w", pady=5)
+        self.checkin_entry = tk.Entry(form)
+        self.checkin_entry.grid(row=2, column=1, sticky="ew", pady=5, padx=(10, 0))
 
-         tk.Label(form, text="Check-Out (YYYY-MM-DD):", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=3, column=0, sticky="w", pady=5)
-         self.checkout_entry = tk.Entry(form)
-         self.checkout_entry.grid(row=3, column=1, sticky="ew", pady=5, padx=(10, 0))
+        tk.Label(form, text="Check-Out (YYYY-MM-DD):", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=3, column=0, sticky="w", pady=5)
+        self.checkout_entry = tk.Entry(form)
+        self.checkout_entry.grid(row=3, column=1, sticky="ew", pady=5, padx=(10, 0))
 
-         self.cost_label = tk.Label(self, text="Estimated Total: $0.00", font=("Arial", 11, "bold"), bg="#81C1EB", fg="#005b96")
-         self.cost_label.pack(pady=10)
+        self.cost_label = tk.Label(self, text="Estimated Total: $0.00", font=("Arial", 11, "bold"), bg="#81C1EB", fg="#005b96")
+        self.cost_label.pack(pady=10)
 
-         btn_row = tk.Frame(self, bg="#81C1EB")
-         btn_row.pack(pady=5)
-         ttk.Button(btn_row, text="Calculate Cost", command=self.preview_cost, style="btn_style.TButton").pack(side="left", padx=5)
-         ttk.Button(btn_row, text="Confirm Booking", command=self.save_booking, style="btn_style.TButton").pack(side="left", padx=5)
+        btn_row = tk.Frame(self, bg="#81C1EB")
+        btn_row.pack(pady=5)
+        ttk.Button(btn_row, text="Calculate Cost", command=self.preview_cost, style="btn_style.TButton").pack(side="left", padx=5)
+        ttk.Button(btn_row, text="Confirm Booking", command=self.save_booking, style="btn_style.TButton").pack(side="left", padx=5)
 
-     def _get_selected_ids(self):
-         g_raw = validate_not_empty(self.guest_cb.get(), "Guest")
-         r_raw = validate_not_empty(self.room_cb.get(), "Room")
-         guest_id = g_raw.split(" - ")[0].strip()
-         room_id = r_raw.split(" ")[0].strip()
-         return guest_id, room_id
+    def _get_selected_ids(self):
+        g_raw = validate_not_empty(self.guest_cb.get(), "Guest")
+        r_raw = validate_not_empty(self.room_cb.get(), "Room")
+        guest_id = g_raw.split(" - ")[0].strip()
+        room_id = r_raw.split(" ")[0].strip()
+        return guest_id, room_id
 
-     def preview_cost(self):
-         try:
-             _, room_id = self._get_selected_ids()
-             validate_date_range(self.checkin_entry.get(), self.checkout_entry.get())
-             nights, total = calculate_booking_cost(room_id, self.checkin_entry.get().strip(), self.checkout_entry.get().strip())
-             self.cost_label.config(text=f"Estimated Total: ${total:.2f} ({nights} night{'s' if nights != 1 else ''})")
-         except ValueError as e:
-             messagebox.showerror("Calculation Error", str(e), parent=self)
+    def preview_cost(self):
+        try:
+            _, room_id = self._get_selected_ids()
+            validate_date_range(self.checkin_entry.get(), self.checkout_entry.get())
+            nights, total = calculate_booking_cost(room_id, self.checkin_entry.get().strip(), self.checkout_entry.get().strip())
+            self.cost_label.config(text=f"Estimated Total: ${total:.2f} ({nights} night{'s' if nights != 1 else ''})")
+        except ValueError as e:
+            messagebox.showerror("Calculation Error", str(e), parent=self)
 
-     def save_booking(self):
-         try:
-             guest_id, room_id = self._get_selected_ids()
-             validate_guest_exists(guest_id)
-             validate_availability(room_id)
-             validate_date_range(self.checkin_entry.get(), self.checkout_entry.get())
-             booking = create_booking(guest_id, room_id, self.checkin_entry.get().strip(), self.checkout_entry.get().strip())
-             messagebox.showinfo("Booking Confirmed", f"Booking {booking['booking_id']} created! Total: ${booking['total']:.2f}", parent=self)
-             self.refresh_callback()
-             self.destroy()
-         except ValueError as e:
-             messagebox.showerror("Booking Error", str(e), parent=self)
-
-
- #---- 2. Maintenance / Update Room Status Popup (Uses existing update_room_status) ----
- class MaintenancePopup(tk.Toplevel):
-     def __init__(self, parent, refresh_callback, preselect_room=""):
-         super().__init__(parent)
-         self.title("Update Room Status / Maintenance")
-         self.geometry("380x240")
-         self.config(background="#81C1EB", padx=20, pady=20)
-         self.resizable(False, False)
-         self.grab_set()
-         self.refresh_callback = refresh_callback
-
-         tk.Label(self, text="Room Status & Maintenance", font=("Arial", 15, "bold"), bg="#81C1EB").pack(pady=(0, 15))
-
-         form = tk.Frame(self, bg="#81C1EB")
-         form.pack(fill="x")
-         form.columnconfigure(1, weight=1)
-
-         tk.Label(form, text="Select Room:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=0, column=0, sticky="w", pady=6)
-         room_ids = [r["room_id"] for r in rooms]
-         self.room_cb = ttk.Combobox(form, values=room_ids, state="readonly")
-         if preselect_room in room_ids:
-             self.room_cb.set(preselect_room)
-         self.room_cb.grid(row=0, column=1, sticky="ew", pady=6, padx=(10, 0))
-
-         tk.Label(form, text="New Status:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=1, column=0, sticky="w", pady=6)
-         self.status_cb = ttk.Combobox(form, values=sorted(list(VALID_STATUSES)), state="readonly")
-         self.status_cb.set("Under Maintenance")
-         self.status_cb.grid(row=1, column=1, sticky="ew", pady=6, padx=(10, 0))
-
-         ttk.Button(self, text="Update Status", command=self.apply_status, style="btn_style.TButton").pack(pady=15)
-
-     def apply_status(self):
-         try:
-             room_id = validate_not_empty(self.room_cb.get(), "Room ID")
-             new_status = validate_not_empty(self.status_cb.get(), "Status")
-             update_room_status(room_id, new_status)
-             messagebox.showinfo("Updated", f"Room {room_id} status changed to '{new_status}'.", parent=self)
-             self.refresh_callback()
-             self.destroy()
-         except ValueError as e:
-             messagebox.showerror("Status Error", str(e), parent=self)
+    def save_booking(self):
+        try:
+            guest_id, room_id = self._get_selected_ids()
+            validate_guest_exists(guest_id)
+            validate_availability(room_id)
+            validate_date_range(self.checkin_entry.get(), self.checkout_entry.get())
+            booking = create_booking(guest_id, room_id, self.checkin_entry.get().strip(), self.checkout_entry.get().strip())
+            messagebox.showinfo("Booking Confirmed", f"Booking {booking['booking_id']} created! Total: ${booking['total']:.2f}", parent=self)
+            self.refresh_callback()
+            self.destroy()
+        except ValueError as e:
+            messagebox.showerror("Booking Error", str(e), parent=self)
 
 
- #---- 3. Add Room Popup (Requires add_room() in Section 1) ----
- class AddRoomPopup(tk.Toplevel):
-     def __init__(self, parent, refresh_callback):
-         super().__init__(parent)
-         self.title("Add New Room")
-         self.geometry("380x280")
-         self.config(background="#81C1EB", padx=20, pady=20)
-         self.resizable(False, False)
-         self.grab_set()
-         self.refresh_callback = refresh_callback
+#---- 2. Maintenance / Update Room Status Popup (Uses existing update_room_status) ----
+class MaintenancePopup(tk.Toplevel):
+    def __init__(self, parent, refresh_callback, preselect_room=""):
+        super().__init__(parent)
+        self.title("Update Room Status / Maintenance")
+        self.geometry("380x240")
+        self.config(background="#81C1EB", padx=20, pady=20)
+        self.resizable(False, False)
+        self.grab_set()
+        self.refresh_callback = refresh_callback
 
-         tk.Label(self, text="Add Hotel Room", font=("Arial", 16, "bold"), bg="#81C1EB").pack(pady=(0, 15))
+        tk.Label(self, text="Room Status & Maintenance", font=("Arial", 15, "bold"), bg="#81C1EB").pack(pady=(0, 15))
 
-         form = tk.Frame(self, bg="#81C1EB")
-         form.pack(fill="x")
-         form.columnconfigure(1, weight=1)
+        form = tk.Frame(self, bg="#81C1EB")
+        form.pack(fill="x")
+        form.columnconfigure(1, weight=1)
 
-         tk.Label(form, text="Room ID (e.g. R101):", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=0, column=0, sticky="w", pady=5)
-         self.id_entry = tk.Entry(form)
-         self.id_entry.grid(row=0, column=1, sticky="ew", pady=5, padx=(10, 0))
+        tk.Label(form, text="Select Room:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=0, column=0, sticky="w", pady=6)
+        room_ids = [r["room_id"] for r in rooms]
+        self.room_cb = ttk.Combobox(form, values=room_ids, state="readonly")
+        if preselect_room in room_ids:
+            self.room_cb.set(preselect_room)
+        self.room_cb.grid(row=0, column=1, sticky="ew", pady=6, padx=(10, 0))
 
-         tk.Label(form, text="Room Type:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=1, column=0, sticky="w", pady=5)
-         self.type_cb = ttk.Combobox(form, values=sorted(list(VALID_ROOM_TYPES)), state="readonly")
-         self.type_cb.set("Single")
-         self.type_cb.grid(row=1, column=1, sticky="ew", pady=5, padx=(10, 0))
+        tk.Label(form, text="New Status:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=1, column=0, sticky="w", pady=6)
+        self.status_cb = ttk.Combobox(form, values=sorted(list(VALID_STATUSES)), state="readonly")
+        self.status_cb.set("Under Maintenance")
+        self.status_cb.grid(row=1, column=1, sticky="ew", pady=6, padx=(10, 0))
 
-         tk.Label(form, text="Nightly Rate ($):", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=2, column=0, sticky="w", pady=5)
-         self.rate_entry = tk.Entry(form)
-         self.rate_entry.grid(row=2, column=1, sticky="ew", pady=5, padx=(10, 0))
+        ttk.Button(self, text="Update Status", command=self.apply_status, style="btn_style.TButton").pack(pady=15)
 
-         tk.Label(form, text="Initial Status:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=3, column=0, sticky="w", pady=5)
-         self.status_cb = ttk.Combobox(form, values=["Available", "Under Maintenance"], state="readonly")
-         self.status_cb.set("Available")
-         self.status_cb.grid(row=3, column=1, sticky="ew", pady=5, padx=(10, 0))
-
-         ttk.Button(self, text="Save Room", command=self.save_room, style="btn_style.TButton").pack(pady=15)
-
-     def save_room(self):
-         try:
-             room_id = validate_not_empty(self.id_entry.get(), "Room ID")
-             room_type = validate_not_empty(self.type_cb.get(), "Room Type")
-             rate = validate_numeric(self.rate_entry.get(), "Nightly Rate", allow_decimal=True, positive_only=True)
-             status = self.status_cb.get()
-             add_room(room_id, room_type, rate, status)
-             messagebox.showinfo("Success", f"Room {room_id} added!", parent=self)
-             self.refresh_callback()
-             self.destroy()
-         except ValueError as e:
-             messagebox.showerror("Room Error", str(e), parent=self)
+    def apply_status(self):
+        try:
+            room_id = validate_not_empty(self.room_cb.get(), "Room ID")
+            new_status = validate_not_empty(self.status_cb.get(), "Status")
+            update_room_status(room_id, new_status)
+            messagebox.showinfo("Updated", f"Room {room_id} status changed to '{new_status}'.", parent=self)
+            self.refresh_callback()
+            self.destroy()
+        except ValueError as e:
+            messagebox.showerror("Status Error", str(e), parent=self)
 
 
- #---- 4. Add Guest Popup (Requires add_guest() in Section 1) ----
- class AddGuestPopup(tk.Toplevel):
-     def __init__(self, parent, refresh_callback):
-         super().__init__(parent)
-         self.title("Register New Guest")
-         self.geometry("380x260")
-         self.config(background="#81C1EB", padx=20, pady=20)
-         self.resizable(False, False)
-         self.grab_set()
-         self.refresh_callback = refresh_callback
+'''#---- 3. Add Room Popup (Requires add_room() in Section 1) ----
+class AddRoomPopup(tk.Toplevel):
+    def __init__(self, parent, refresh_callback):
+        super().__init__(parent)
+        self.title("Add New Room")
+        self.geometry("380x280")
+        self.config(background="#81C1EB", padx=20, pady=20)
+        self.resizable(False, False)
+        self.grab_set()
+        self.refresh_callback = refresh_callback
 
-         tk.Label(self, text="Register Guest", font=("Arial", 16, "bold"), bg="#81C1EB").pack(pady=(0, 15))
+        tk.Label(self, text="Add Hotel Room", font=("Arial", 16, "bold"), bg="#81C1EB").pack(pady=(0, 15))
 
-         form = tk.Frame(self, bg="#81C1EB")
-         form.pack(fill="x")
-         form.columnconfigure(1, weight=1)
+        form = tk.Frame(self, bg="#81C1EB")
+        form.pack(fill="x")
+        form.columnconfigure(1, weight=1)
 
-         tk.Label(form, text="Full Name:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=0, column=0, sticky="w", pady=5)
-         self.name_entry = tk.Entry(form)
-         self.name_entry.grid(row=0, column=1, sticky="ew", pady=5, padx=(10, 0))
+        tk.Label(form, text="Room ID (e.g. R101):", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=0, column=0, sticky="w", pady=5)
+        self.id_entry = tk.Entry(form)
+        self.id_entry.grid(row=0, column=1, sticky="ew", pady=5, padx=(10, 0))
 
-         tk.Label(form, text="Phone:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=1, column=0, sticky="w", pady=5)
-         self.phone_entry = tk.Entry(form)
-         self.phone_entry.grid(row=1, column=1, sticky="ew", pady=5, padx=(10, 0))
+        tk.Label(form, text="Room Type:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=1, column=0, sticky="w", pady=5)
+        self.type_cb = ttk.Combobox(form, values=sorted(list(VALID_ROOM_TYPES)), state="readonly")
+        self.type_cb.set("Single")
+        self.type_cb.grid(row=1, column=1, sticky="ew", pady=5, padx=(10, 0))
 
-         tk.Label(form, text="Email:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=2, column=0, sticky="w", pady=5)
-         self.email_entry = tk.Entry(form)
-         self.email_entry.grid(row=2, column=1, sticky="ew", pady=5, padx=(10, 0))
+        tk.Label(form, text="Nightly Rate ($):", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=2, column=0, sticky="w", pady=5)
+        self.rate_entry = tk.Entry(form)
+        self.rate_entry.grid(row=2, column=1, sticky="ew", pady=5, padx=(10, 0))
 
-         ttk.Button(self, text="Register Guest", command=self.save_guest, style="btn_style.TButton").pack(pady=15)
+        tk.Label(form, text="Initial Status:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=3, column=0, sticky="w", pady=5)
+        self.status_cb = ttk.Combobox(form, values=["Available", "Under Maintenance"], state="readonly")
+        self.status_cb.set("Available")
+        self.status_cb.grid(row=3, column=1, sticky="ew", pady=5, padx=(10, 0))
 
-     def save_guest(self):
-         try:
-             name = validate_not_empty(self.name_entry.get(), "Guest Name")
-             phone = validate_not_empty(self.phone_entry.get(), "Phone")
-             email = self.email_entry.get().strip()
-             guest = add_guest(name, phone, email)
-             messagebox.showinfo("Success", f"Guest {guest['name']} ({guest['guest_id']}) registered!", parent=self)
-             self.refresh_callback()
-             self.destroy()
-         except ValueError as e:
-             messagebox.showerror("Guest Error", str(e), parent=self)
+        ttk.Button(self, text="Save Room", command=self.save_room, style="btn_style.TButton").pack(pady=15)
 
+    def save_room(self):
+        try:
+            room_id = validate_not_empty(self.id_entry.get(), "Room ID")
+            room_type = validate_not_empty(self.type_cb.get(), "Room Type")
+            rate = validate_numeric(self.rate_entry.get(), "Nightly Rate", allow_decimal=True, positive_only=True)
+            status = self.status_cb.get()
+            add_room(room_id, room_type, rate, status)
+            messagebox.showinfo("Success", f"Room {room_id} added!", parent=self)
+            self.refresh_callback()
+            self.destroy()
+        except ValueError as e:
+            messagebox.showerror("Room Error", str(e), parent=self)'''
 
- #---- 5. Add Staff Popup (Requires add_staff() in Section 1) ----
- class AddStaffPopup(tk.Toplevel):
-     def __init__(self, parent, refresh_callback):
-         super().__init__(parent)
-         self.title("Add Staff Member")
-         self.geometry("380x290")
-         self.config(background="#81C1EB", padx=20, pady=20)
-         self.resizable(False, False)
-         self.grab_set()
-         self.refresh_callback = refresh_callback
+'''#---- 4. Add Guest Popup (Requires add_guest() in Section 1) ----
+class AddGuestPopup(tk.Toplevel):
+    def __init__(self, parent, refresh_callback):
+        super().__init__(parent)
+        self.title("Register New Guest")
+        self.geometry("380x260")
+        self.config(background="#81C1EB", padx=20, pady=20)
+        self.resizable(False, False)
+        self.grab_set()
+        self.refresh_callback = refresh_callback
 
-         tk.Label(self, text="Add Staff Account", font=("Arial", 16, "bold"), bg="#81C1EB").pack(pady=(0, 15))
+        tk.Label(self, text="Register Guest", font=("Arial", 16, "bold"), bg="#81C1EB").pack(pady=(0, 15))
 
-         form = tk.Frame(self, bg="#81C1EB")
-         form.pack(fill="x")
-         form.columnconfigure(1, weight=1)
+        form = tk.Frame(self, bg="#81C1EB")
+        form.pack(fill="x")
+        form.columnconfigure(1, weight=1)
 
-         tk.Label(form, text="Full Name:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=0, column=0, sticky="w", pady=5)
-         self.name_entry = tk.Entry(form)
-         self.name_entry.grid(row=0, column=1, sticky="ew", pady=5, padx=(10, 0))
+        tk.Label(form, text="Full Name:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=0, column=0, sticky="w", pady=5)
+        self.name_entry = tk.Entry(form)
+        self.name_entry.grid(row=0, column=1, sticky="ew", pady=5, padx=(10, 0))
 
-         tk.Label(form, text="Role:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=1, column=0, sticky="w", pady=5)
-         self.role_cb = ttk.Combobox(form, values=sorted(list(VALID_ROLES)), state="readonly")
-         self.role_cb.set("Receptionist")
-         self.role_cb.grid(row=1, column=1, sticky="ew", pady=5, padx=(10, 0))
+        tk.Label(form, text="Phone:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=1, column=0, sticky="w", pady=5)
+        self.phone_entry = tk.Entry(form)
+        self.phone_entry.grid(row=1, column=1, sticky="ew", pady=5, padx=(10, 0))
 
-         tk.Label(form, text="Username:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=2, column=0, sticky="w", pady=5)
-         self.user_entry = tk.Entry(form)
-         self.user_entry.grid(row=2, column=1, sticky="ew", pady=5, padx=(10, 0))
+        tk.Label(form, text="Email:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=2, column=0, sticky="w", pady=5)
+        self.email_entry = tk.Entry(form)
+        self.email_entry.grid(row=2, column=1, sticky="ew", pady=5, padx=(10, 0))
 
-         tk.Label(form, text="Password:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=3, column=0, sticky="w", pady=5)
-         self.pass_entry = tk.Entry(form, show="*")
-         self.pass_entry.grid(row=3, column=1, sticky="ew", pady=5, padx=(10, 0))
+        ttk.Button(self, text="Register Guest", command=self.save_guest, style="btn_style.TButton").pack(pady=15)
 
-         ttk.Button(self, text="Save Staff", command=self.save_staff, style="btn_style.TButton").pack(pady=15)
+    def save_guest(self):
+        try:
+            name = validate_not_empty(self.name_entry.get(), "Guest Name")
+            phone = validate_not_empty(self.phone_entry.get(), "Phone")
+            email = self.email_entry.get().strip()
+            guest = add_guest(name, phone, email)
+            messagebox.showinfo("Success", f"Guest {guest['name']} ({guest['guest_id']}) registered!", parent=self)
+            self.refresh_callback()
+            self.destroy()
+        except ValueError as e:
+            messagebox.showerror("Guest Error", str(e), parent=self)'''
 
-     def save_staff(self):
-         try:
-             name = validate_not_empty(self.name_entry.get(), "Full Name")
-             role = validate_not_empty(self.role_cb.get(), "Role")
-             username = validate_not_empty(self.user_entry.get(), "Username")
-             password = validate_not_empty(self.pass_entry.get(), "Password")
-             member = add_staff(name, role, username, password)
-             messagebox.showinfo("Success", f"Staff {member['name']} ({member['staff_id']}) added!", parent=self)
-             self.refresh_callback()
-             self.destroy()
-         except ValueError as e:
-             messagebox.showerror("Staff Error", str(e), parent=self)'''
+'''#---- 5. Add Staff Popup (Requires add_staff() in Section 1) ----
+class AddStaffPopup(tk.Toplevel):
+    def __init__(self, parent, refresh_callback):
+        super().__init__(parent)
+        self.title("Add Staff Member")
+        self.geometry("380x290")
+        self.config(background="#81C1EB", padx=20, pady=20)
+        self.resizable(False, False)
+        self.grab_set()
+        self.refresh_callback = refresh_callback
 
+        tk.Label(self, text="Add Staff Account", font=("Arial", 16, "bold"), bg="#81C1EB").pack(pady=(0, 15))
+
+        form = tk.Frame(self, bg="#81C1EB")
+        form.pack(fill="x")
+        form.columnconfigure(1, weight=1)
+
+        tk.Label(form, text="Full Name:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=0, column=0, sticky="w", pady=5)
+        self.name_entry = tk.Entry(form)
+        self.name_entry.grid(row=0, column=1, sticky="ew", pady=5, padx=(10, 0))
+
+        tk.Label(form, text="Role:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=1, column=0, sticky="w", pady=5)
+        self.role_cb = ttk.Combobox(form, values=sorted(list(VALID_ROLES)), state="readonly")
+        self.role_cb.set("Receptionist")
+        self.role_cb.grid(row=1, column=1, sticky="ew", pady=5, padx=(10, 0))
+
+        tk.Label(form, text="Username:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=2, column=0, sticky="w", pady=5)
+        self.user_entry = tk.Entry(form)
+        self.user_entry.grid(row=2, column=1, sticky="ew", pady=5, padx=(10, 0))
+
+        tk.Label(form, text="Password:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=3, column=0, sticky="w", pady=5)
+        self.pass_entry = tk.Entry(form, show="*")
+        self.pass_entry.grid(row=3, column=1, sticky="ew", pady=5, padx=(10, 0))
+
+        ttk.Button(self, text="Save Staff", command=self.save_staff, style="btn_style.TButton").pack(pady=15)
+
+    def save_staff(self):
+        try:
+            name = validate_not_empty(self.name_entry.get(), "Full Name")
+            role = validate_not_empty(self.role_cb.get(), "Role")
+            username = validate_not_empty(self.user_entry.get(), "Username")
+            password = validate_not_empty(self.pass_entry.get(), "Password")
+            member = add_staff(name, role, username, password)
+            messagebox.showinfo("Success", f"Staff {member['name']} ({member['staff_id']}) added!", parent=self)
+            self.refresh_callback()
+            self.destroy()
+        except ValueError as e:
+            messagebox.showerror("Staff Error", str(e), parent=self)'''
 
 # ---- Welcome Screen -------------------------------------------------
 class WelcomeFrame(tk.Frame):
@@ -891,7 +888,7 @@ class MainFrame(tk.Frame):
         ]
         self._populate_table(rows)
 
-    ''' ---- Uncomment when Staff Directory view is enabled ----
+    '''# ---- Uncomment when Staff Directory view is enabled ----
      def show_staff(self):
          self.current_view = "staff"
          self.section_title.config(text="Staff Directory")
@@ -907,9 +904,9 @@ class MainFrame(tk.Frame):
              (s.get("staff_id", "—"), s.get("name", "—"), s.get("role", "—"), s.get("username", "—"))
              for s in staff
          ]
-         self._populate_table(rows)
+         self._populate_table(rows)'''
 
-     ---- Popup Launchers (Uncomment along with the popup classes above) ----
+    '''# ---- Popup Launchers (Uncomment along with the popup classes above) ----
      def open_booking_popup(self):
          NewBookingPopup(self, self.show_reservations)
     
