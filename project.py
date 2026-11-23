@@ -2,23 +2,24 @@
 CNS1001 Project 2 — Hotel Reservation Management System (HRS)
 Data Layer & Business Logic (Darien Henry)
 """
+
 import json
 import os
 import sys
 from datetime import datetime
+
 # -- GUI Imports (for Domanick) --
 import tkinter as tk
 from tkinter import ttk, messagebox
-
 
 # =====================================================================
 # SECTION 1: DATA LAYER & LOGIC (Darien Henry)
 # =====================================================================
 # ---- Data structures (all lists of dicts) --------------------------
-rooms: list = []      
-guests: list = []      
-staff: list = []      
-bookings: list = []      
+rooms: list = []
+guests: list = []
+staff: list = []
+bookings: list = []
 
 
 VALID_ROOM_TYPES = {"Single", "Double", "Suite"}
@@ -71,7 +72,7 @@ def next_id(prefix: str, items: list, key: str) -> str:
         ident = item.get(key, "")
         if ident.startswith(prefix):
             try:
-                number = int(ident[len(prefix):])
+                number = int(ident[len(prefix) :])
                 if number > highest:
                     highest = number
             except ValueError:
@@ -173,16 +174,17 @@ def update_room_status(room_id: str, new_status: str):
         raise ValueError("Room not found.")
     if room["status"] == new_status:
         raise ValueError(f"Room {room_id} is already marked as '{new_status}'.")
-       
+
     # --- MOVED THIS CHECK UP ---
     if new_status == "Available" and find_active_booking_for_room(room_id):
         raise ValueError("Cannot mark as Available. Room has an active booking.")
-       
+
     # --- ADDED THIS CHECK (Maintenance can't be set if occupied) ---
     if new_status == "Under Maintenance" and room["status"] == "Occupied":
-        raise ValueError(f"Cannot set to Maintenance. Room {room_id} is currently Occupied.")
+        raise ValueError(
+            f"Cannot set to Maintenance. Room {room_id} is currently Occupied."
+        )
     # ----------------------------
-
 
     room["status"] = new_status
     save_data()
@@ -211,16 +213,25 @@ def validate_login(info, controller):
 
     # Check against the global `staff` list from Section 1
     authenticated = False
-    for member in staff:
-        staff_user = str(
-            member.get("username") or member.get("name") or member.get("staff_id", "")
-        ).strip()
-        staff_pass = str(
-            member.get("password") or member.get("pin") or member.get("staff_id", "")
-        ).strip()
-        if name == staff_user and key == staff_pass:
-            authenticated = True
-            break
+
+    if not staff and name == "admin" and key == "1234":
+        authenticated = True
+    else:
+
+        for member in staff:
+            staff_user = str(
+                member.get("username")
+                or member.get("name")
+                or member.get("staff_id", "")
+            ).strip()
+            staff_pass = str(
+                member.get("password")
+                or member.get("pin")
+                or member.get("staff_id", "")
+            ).strip()
+            if name == staff_user and key == staff_pass:
+                authenticated = True
+                break
 
     if authenticated:
         attempt_count = 1
@@ -352,6 +363,7 @@ def exit_to_welcome(controller):
 # POPUP FORMS (UNCOMMENT WHEN SECTION 1 FUNCTIONS ARE READY)
 # =====================================================================
 
+
 # ---- 1. New Booking Popup (Uses existing create_booking & calculate_booking_cost) ----
 class NewBookingPopup(tk.Toplevel):
     def __init__(self, parent, refresh_callback):
@@ -363,37 +375,73 @@ class NewBookingPopup(tk.Toplevel):
         self.grab_set()
         self.refresh_callback = refresh_callback
 
-        tk.Label(self, text="Create New Booking", font=("Arial", 16, "bold"), bg="#81C1EB").pack(pady=(0, 15))
+        tk.Label(
+            self, text="Create New Booking", font=("Arial", 16, "bold"), bg="#81C1EB"
+        ).pack(pady=(0, 15))
 
         form = tk.Frame(self, bg="#81C1EB")
         form.pack(fill="x")
         form.columnconfigure(1, weight=1)
 
-        tk.Label(form, text="Guest ID:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=0, column=0, sticky="w", pady=5)
+        tk.Label(form, text="Guest ID:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(
+            row=0, column=0, sticky="w", pady=5
+        )
         guest_choices = [f"{g['guest_id']} - {g['name']}" for g in guests]
         self.guest_cb = ttk.Combobox(form, values=guest_choices, state="readonly")
         self.guest_cb.grid(row=0, column=1, sticky="ew", pady=5, padx=(10, 0))
 
-        tk.Label(form, text="Available Room:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=1, column=0, sticky="w", pady=5)
-        room_choices = [f"{r['room_id']} ({r['type']} - ${r['rate']})" for r in rooms if r["status"] == "Available"]
+        tk.Label(
+            form, text="Available Room:", bg="#81C1EB", font=("Arial", 10, "bold")
+        ).grid(row=1, column=0, sticky="w", pady=5)
+        room_choices = [
+            f"{r['room_id']} ({r['type']} - ${r['rate']})"
+            for r in rooms
+            if r["status"] == "Available"
+        ]
         self.room_cb = ttk.Combobox(form, values=room_choices, state="readonly")
         self.room_cb.grid(row=1, column=1, sticky="ew", pady=5, padx=(10, 0))
 
-        tk.Label(form, text="Check-In (YYYY-MM-DD):", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=2, column=0, sticky="w", pady=5)
+        tk.Label(
+            form,
+            text="Check-In (YYYY-MM-DD):",
+            bg="#81C1EB",
+            font=("Arial", 10, "bold"),
+        ).grid(row=2, column=0, sticky="w", pady=5)
         self.checkin_entry = tk.Entry(form)
         self.checkin_entry.grid(row=2, column=1, sticky="ew", pady=5, padx=(10, 0))
 
-        tk.Label(form, text="Check-Out (YYYY-MM-DD):", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=3, column=0, sticky="w", pady=5)
+        tk.Label(
+            form,
+            text="Check-Out (YYYY-MM-DD):",
+            bg="#81C1EB",
+            font=("Arial", 10, "bold"),
+        ).grid(row=3, column=0, sticky="w", pady=5)
         self.checkout_entry = tk.Entry(form)
         self.checkout_entry.grid(row=3, column=1, sticky="ew", pady=5, padx=(10, 0))
 
-        self.cost_label = tk.Label(self, text="Estimated Total: $0.00", font=("Arial", 11, "bold"), bg="#81C1EB", fg="#005b96")
+        self.cost_label = tk.Label(
+            self,
+            text="Estimated Total: $0.00",
+            font=("Arial", 11, "bold"),
+            bg="#81C1EB",
+            fg="#005b96",
+        )
         self.cost_label.pack(pady=10)
 
         btn_row = tk.Frame(self, bg="#81C1EB")
         btn_row.pack(pady=5)
-        ttk.Button(btn_row, text="Calculate Cost", command=self.preview_cost, style="btn_style.TButton").pack(side="left", padx=5)
-        ttk.Button(btn_row, text="Confirm Booking", command=self.save_booking, style="btn_style.TButton").pack(side="left", padx=5)
+        ttk.Button(
+            btn_row,
+            text="Calculate Cost",
+            command=self.preview_cost,
+            style="btn_style.TButton",
+        ).pack(side="left", padx=5)
+        ttk.Button(
+            btn_row,
+            text="Confirm Booking",
+            command=self.save_booking,
+            style="btn_style.TButton",
+        ).pack(side="left", padx=5)
 
     def _get_selected_ids(self):
         g_raw = validate_not_empty(self.guest_cb.get(), "Guest")
@@ -406,8 +454,14 @@ class NewBookingPopup(tk.Toplevel):
         try:
             _, room_id = self._get_selected_ids()
             validate_date_range(self.checkin_entry.get(), self.checkout_entry.get())
-            nights, total = calculate_booking_cost(room_id, self.checkin_entry.get().strip(), self.checkout_entry.get().strip())
-            self.cost_label.config(text=f"Estimated Total: ${total:.2f} ({nights} night{'s' if nights != 1 else ''})")
+            nights, total = calculate_booking_cost(
+                room_id,
+                self.checkin_entry.get().strip(),
+                self.checkout_entry.get().strip(),
+            )
+            self.cost_label.config(
+                text=f"Estimated Total: ${total:.2f} ({nights} night{'s' if nights != 1 else ''})"
+            )
         except ValueError as e:
             messagebox.showerror("Calculation Error", str(e), parent=self)
 
@@ -417,15 +471,24 @@ class NewBookingPopup(tk.Toplevel):
             validate_guest_exists(guest_id)
             validate_availability(room_id)
             validate_date_range(self.checkin_entry.get(), self.checkout_entry.get())
-            booking = create_booking(guest_id, room_id, self.checkin_entry.get().strip(), self.checkout_entry.get().strip())
-            messagebox.showinfo("Booking Confirmed", f"Booking {booking['booking_id']} created! Total: ${booking['total']:.2f}", parent=self)
+            booking = create_booking(
+                guest_id,
+                room_id,
+                self.checkin_entry.get().strip(),
+                self.checkout_entry.get().strip(),
+            )
+            messagebox.showinfo(
+                "Booking Confirmed",
+                f"Booking {booking['booking_id']} created! Total: ${booking['total']:.2f}",
+                parent=self,
+            )
             self.refresh_callback()
             self.destroy()
         except ValueError as e:
             messagebox.showerror("Booking Error", str(e), parent=self)
 
 
-#---- 2. Maintenance / Update Room Status Popup (Uses existing update_room_status) ----
+# ---- 2. Maintenance / Update Room Status Popup (Uses existing update_room_status) ----
 class MaintenancePopup(tk.Toplevel):
     def __init__(self, parent, refresh_callback, preselect_room=""):
         super().__init__(parent)
@@ -436,39 +499,59 @@ class MaintenancePopup(tk.Toplevel):
         self.grab_set()
         self.refresh_callback = refresh_callback
 
-        tk.Label(self, text="Room Status & Maintenance", font=("Arial", 15, "bold"), bg="#81C1EB").pack(pady=(0, 15))
+        tk.Label(
+            self,
+            text="Room Status & Maintenance",
+            font=("Arial", 15, "bold"),
+            bg="#81C1EB",
+        ).pack(pady=(0, 15))
 
         form = tk.Frame(self, bg="#81C1EB")
         form.pack(fill="x")
         form.columnconfigure(1, weight=1)
 
-        tk.Label(form, text="Select Room:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=0, column=0, sticky="w", pady=6)
+        tk.Label(
+            form, text="Select Room:", bg="#81C1EB", font=("Arial", 10, "bold")
+        ).grid(row=0, column=0, sticky="w", pady=6)
         room_ids = [r["room_id"] for r in rooms]
         self.room_cb = ttk.Combobox(form, values=room_ids, state="readonly")
         if preselect_room in room_ids:
             self.room_cb.set(preselect_room)
         self.room_cb.grid(row=0, column=1, sticky="ew", pady=6, padx=(10, 0))
 
-        tk.Label(form, text="New Status:", bg="#81C1EB", font=("Arial", 10, "bold")).grid(row=1, column=0, sticky="w", pady=6)
-        self.status_cb = ttk.Combobox(form, values=sorted(list(VALID_STATUSES)), state="readonly")
+        tk.Label(
+            form, text="New Status:", bg="#81C1EB", font=("Arial", 10, "bold")
+        ).grid(row=1, column=0, sticky="w", pady=6)
+        self.status_cb = ttk.Combobox(
+            form, values=sorted(list(VALID_STATUSES)), state="readonly"
+        )
         self.status_cb.set("Under Maintenance")
         self.status_cb.grid(row=1, column=1, sticky="ew", pady=6, padx=(10, 0))
 
-        ttk.Button(self, text="Update Status", command=self.apply_status, style="btn_style.TButton").pack(pady=15)
+        ttk.Button(
+            self,
+            text="Update Status",
+            command=self.apply_status,
+            style="btn_style.TButton",
+        ).pack(pady=15)
 
     def apply_status(self):
         try:
             room_id = validate_not_empty(self.room_cb.get(), "Room ID")
             new_status = validate_not_empty(self.status_cb.get(), "Status")
             update_room_status(room_id, new_status)
-            messagebox.showinfo("Updated", f"Room {room_id} status changed to '{new_status}'.", parent=self)
+            messagebox.showinfo(
+                "Updated",
+                f"Room {room_id} status changed to '{new_status}'.",
+                parent=self,
+            )
             self.refresh_callback()
             self.destroy()
         except ValueError as e:
             messagebox.showerror("Status Error", str(e), parent=self)
 
 
-'''#---- 3. Add Room Popup (Requires add_room() in Section 1) ----
+"""#---- 3. Add Room Popup (Requires add_room() in Section 1) ----
 class AddRoomPopup(tk.Toplevel):
     def __init__(self, parent, refresh_callback):
         super().__init__(parent)
@@ -516,9 +599,9 @@ class AddRoomPopup(tk.Toplevel):
             self.refresh_callback()
             self.destroy()
         except ValueError as e:
-            messagebox.showerror("Room Error", str(e), parent=self)'''
+            messagebox.showerror("Room Error", str(e), parent=self)"""
 
-'''#---- 4. Add Guest Popup (Requires add_guest() in Section 1) ----
+"""#---- 4. Add Guest Popup (Requires add_guest() in Section 1) ----
 class AddGuestPopup(tk.Toplevel):
     def __init__(self, parent, refresh_callback):
         super().__init__(parent)
@@ -559,9 +642,9 @@ class AddGuestPopup(tk.Toplevel):
             self.refresh_callback()
             self.destroy()
         except ValueError as e:
-            messagebox.showerror("Guest Error", str(e), parent=self)'''
+            messagebox.showerror("Guest Error", str(e), parent=self)"""
 
-'''#---- 5. Add Staff Popup (Requires add_staff() in Section 1) ----
+"""#---- 5. Add Staff Popup (Requires add_staff() in Section 1) ----
 class AddStaffPopup(tk.Toplevel):
     def __init__(self, parent, refresh_callback):
         super().__init__(parent)
@@ -608,7 +691,8 @@ class AddStaffPopup(tk.Toplevel):
             self.refresh_callback()
             self.destroy()
         except ValueError as e:
-            messagebox.showerror("Staff Error", str(e), parent=self)'''
+            messagebox.showerror("Staff Error", str(e), parent=self)"""
+
 
 # ---- Welcome Screen -------------------------------------------------
 class WelcomeFrame(tk.Frame):
@@ -630,11 +714,11 @@ class WelcomeFrame(tk.Frame):
         )
         label.grid(row=0, column=0, sticky="n")
 
-        button_outline = tk.Frame(self, background="black")
-        button_outline.grid(row=1, column=0, padx=3, pady=(0, 5))
+        button_container = tk.Frame(self, background="black")
+        button_container.grid(row=1, column=0, padx=3, pady=(0, 5))
 
         button_start = ttk.Button(
-            button_outline,
+            button_container,
             text="OPEN",
             command=lambda: open_home(controller),
             style="btn_style.TButton",
@@ -662,34 +746,38 @@ class HomeFrame(tk.Frame):
         )
         label.grid(row=0, column=0, sticky="n")
 
-        input_box = tk.Frame(self, background="#81C1EB")
+        input_box = tk.Frame(self, background="#3678A5")
         input_box.grid(row=1, column=0, sticky="ns")
 
         tk.Label(
-            input_box, text="Username", bg="#81C1EB", font=("Arial", 11, "bold")
+            input_box, text="Username", bg="#3678A5", font=("Arial", 11, "bold")
         ).grid(row=0, column=0, padx=3, pady=3)
         _inputUser = tk.Entry(input_box, font=("Arial", 11))
         _inputUser.grid(row=1, column=0, padx=3, pady=3)
 
         tk.Label(
-            input_box, text="Password", bg="#81C1EB", font=("Arial", 11, "bold")
+            input_box, text="Password", bg="#3678A5", font=("Arial", 11, "bold")
         ).grid(row=2, column=0, padx=3, pady=3)
         _inputKey = tk.Entry(input_box, show="*", font=("Arial", 11))
         _inputKey.grid(row=3, column=0, padx=3, pady=3)
 
-        button_outline = tk.Frame(self, background="black")
-        button_outline.grid(row=2, column=0, padx=3, pady=(0, 5))
+        button_container = tk.Frame(self, background="#81c1eb")
+        button_container.grid(row=2, column=0, padx=3, pady=(0, 5))
 
+        submit_outline = tk.Frame(button_container, background="black")
+        submit_outline.pack(pady=(0, 10))
         button_submit = ttk.Button(
-            button_outline,
+            submit_outline,
             text="SUBMIT",
             command=lambda: submit_login(_inputUser, _inputKey, controller),
             style="btn_style.TButton",
         )
         button_submit.pack(padx=2, pady=2)
 
+        exit_outline = tk.Frame(button_container, background="black")
+        exit_outline.pack()
         button_exit = ttk.Button(
-            button_outline,
+            exit_outline,
             text="EXIT",
             command=lambda: exit_to_welcome(controller),
             style="btn_style.TButton",
@@ -781,11 +869,11 @@ class MainFrame(tk.Frame):
             ("Export Bookings CSV", self.handle_export_bookings),
             ("Occupancy Report", self.handle_occupancy_report),
             # ---- Uncomment below to enable popup form buttons ----
-            ''' ("+ New Booking", self.open_booking_popup),
-             ("Maintenance / Status", self.open_maintenance_popup),
-             ("+ Add Room", self.open_add_room_popup),
-             ("+ Add Guest", self.open_add_guest_popup),
-             ("+ Add Staff", self.open_add_staff_popup),'''
+            # ("+ New Booking", self.open_booking_popup),
+            # ("Maintenance / Status", self.open_maintenance_popup),
+            # ("+ Add Room", self.open_add_room_popup),
+            # ("+ Add Guest", self.open_add_guest_popup),
+            # ("+ Add Staff", self.open_add_staff_popup),,
         ]
 
         for idx, (label, cmd) in enumerate(actions):
@@ -888,7 +976,7 @@ class MainFrame(tk.Frame):
         ]
         self._populate_table(rows)
 
-    '''# ---- Uncomment when Staff Directory view is enabled ----
+    """# ---- Uncomment when Staff Directory view is enabled ----
      def show_staff(self):
          self.current_view = "staff"
          self.section_title.config(text="Staff Directory")
@@ -904,9 +992,9 @@ class MainFrame(tk.Frame):
              (s.get("staff_id", "—"), s.get("name", "—"), s.get("role", "—"), s.get("username", "—"))
              for s in staff
          ]
-         self._populate_table(rows)'''
+         self._populate_table(rows)"""
 
-    '''# ---- Popup Launchers (Uncomment along with the popup classes above) ----
+    """# ---- Popup Launchers (Uncomment along with the popup classes above) ----
      def open_booking_popup(self):
          NewBookingPopup(self, self.show_reservations)
     
@@ -925,7 +1013,7 @@ class MainFrame(tk.Frame):
          AddGuestPopup(self, self.show_guests)
     
      def open_add_staff_popup(self):
-         AddStaffPopup(self, self.show_staff)'''
+         AddStaffPopup(self, self.show_staff)"""
 
     def handle_checkout(self):
         selected = self.tree.selection()
@@ -997,14 +1085,14 @@ class HotelApp(tk.Tk):
         frame.tkraise()
 
 
-
 # =====================================================================
 # SECTION 3: REPORTS & CSV EXPORT (Tean Thomas)
 # =====================================================================
 
 import csv
 
-#--------- Occupancy Report -------------------------------------------
+
+# --------- Occupancy Report -------------------------------------------
 def generate_occupancy_report():
     total_rooms = len(rooms)
     occupied = 0
@@ -1015,36 +1103,36 @@ def generate_occupancy_report():
         elif r["status"] == "Under Maintenance":
             maintenance = maintenance + 1
 
-        available = total_rooms - occupied - maintenance 
-        if total_rooms > 0:
-            rate = occupied / total_rooms * 100 
-        else: 
-            rate = 0
+    available = total_rooms - occupied - maintenance
+    if total_rooms > 0:
+        rate = occupied / total_rooms * 100
+    else:
+        rate = 0
 
-        print("Total rooms:", total_rooms)
-        print("Occupied rooms:", occupied)
-        print("Available rooms:", available)
-        print("Rooms under maintenance:", maintenance) 
-        print("Occupancy rate:", round(rate, 2), "%")
-        return {
-            "total": total_rooms,
-            "occupied": occupied,
-            "available": available,
-            "maintenance": maintenance,
-            "rate": round(rate, 2)
-        }
+    print("Total rooms:", total_rooms)
+    print("Occupied rooms:", occupied)
+    print("Available rooms:", available)
+    print("Rooms under maintenance:", maintenance)
+    print("Occupancy rate:", round(rate, 2), "%")
+    return {
+        "total": total_rooms,
+        "occupied": occupied,
+        "available": available,
+        "maintenance": maintenance,
+        "rate": round(rate, 2),
+    }
 
 
-#--------- Revenue Report ---------------------------------------------
-def generate_revenue_report(): 
-    total = 0 
+# --------- Revenue Report ---------------------------------------------
+def generate_revenue_report():
+    total = 0
     for b in bookings:
         total = total + b["total"]
         print("Total Bookings:", len(bookings))
         print("Total Revenue: $" + str(total))
 
     by_type = {}
-    for b in bookings: 
+    for b in bookings:
         room = find_rooms(b["rooms_id"])
         if room:
             t = room["type"]
@@ -1052,18 +1140,18 @@ def generate_revenue_report():
             t = "Unknown"
             if t in by_type:
                 by_type[t] = by_type[t] + b["total"]
-            else: 
+            else:
                 by_type[t] = b["total"]
-        for t in by_type: 
+        for t in by_type:
             print(t, ": $", by_type[t])
-        return by_type 
+        return by_type
 
 
-#--------- Full bookings report----------------------------------------
+# --------- Full bookings report----------------------------------------
 def generate_bookings_report():
     print("FULL BOOKINGS REPORT")
     print()
-    if len(bookings) ==0:
+    if len(bookings) == 0:
         print("No bookings found.")
         return []
     for b in bookings:
@@ -1080,44 +1168,48 @@ def generate_bookings_report():
         return bookings
 
 
-#---------- Export Bookings to csv ---------------------------------------
+# ---------- Export Bookings to csv ---------------------------------------
 def export_bookings_to_csv(filename="bookings_report.csv"):
     try:
         f = open(filename, "w", newline="", encoding="utf-8")
         writer = csv.writer(f)
-        writer.writerow([
-            "Booking ID",
-            "Guest ID",
-            "Guest Name",
-            "Room ID",
-            "Room Type",
-            "Check In", 
-            "Check Out",
-            "Nights",
-            "Total"
-        ])
+        writer.writerow(
+            [
+                "Booking ID",
+                "Guest ID",
+                "Guest Name",
+                "Room ID",
+                "Room Type",
+                "Check In",
+                "Check Out",
+                "Nights",
+                "Total",
+            ]
+        )
         for b in bookings:
             guest = find_guest(b["guest_id"])
             if guest:
-                guest_name = guest["name"] 
-            else: 
+                guest_name = guest["name"]
+            else:
                 guest_name = "Unknown"
             room = find_room(b["room_id"])
             if room:
                 room_type = room["type"]
             else:
-                room_type = "Unknown"    
-            writer.writerow([
-                b["booking_id"],
-                b["guest_id"],
-                b["guest_name"],
-                b["room_id"],
-                b["room_type"],
-                b["check_in"],
-                b["check_out"],
-                b["nights"],
-                b["total"]
-            ])
+                room_type = "Unknown"
+            writer.writerow(
+                [
+                    b["booking_id"],
+                    b["guest_id"],
+                    b["guest_name"],
+                    b["room_id"],
+                    b["room_type"],
+                    b["check_in"],
+                    b["check_out"],
+                    b["nights"],
+                    b["total"],
+                ]
+            )
         f.close()
         print("Bookings report saved to", filename)
         return filename
@@ -1126,26 +1218,23 @@ def export_bookings_to_csv(filename="bookings_report.csv"):
         return None
 
 
-
-#----------- Export Occupancy to csv ------------------------------------
+# ----------- Export Occupancy to csv ------------------------------------
 def export_occupancy_to_csv(filename="occupancy_report.csv"):
     try:
-        f = open(filename, "w", newline   ="", encoding="utf-8")
+        f = open(filename, "w", newline="", encoding="utf-8")
         writer = csv.writer(f)
-        writer.writerow([
-            "total_rooms",
-            "occupied",
-            "available",
-            "maintenance",
-            "occupancy_rate"
-        ])
-        writer.writerow ([
-            report["total"],
-            report["occupied"],
-            report["available"],
-            report["maintenance"],
-            report["rate"]
-        ])
+        writer.writerow(
+            ["total_rooms", "occupied", "available", "maintenance", "occupancy_rate"]
+        )
+        writer.writerow(
+            [
+                report["total"],
+                report["occupied"],
+                report["available"],
+                report["maintenance"],
+                report["rate"],
+            ]
+        )
         f.close()
         print("Occupancy report saved to", filename)
         return filename
@@ -1154,12 +1243,9 @@ def export_occupancy_to_csv(filename="occupancy_report.csv"):
         return None
 
 
-
 # =====================================================================
 # MAIN EXECUTION
 # =====================================================================
 if __name__ == "__main__":
     app = HotelApp()
     app.mainloop()
-
-
