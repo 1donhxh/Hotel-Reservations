@@ -218,24 +218,24 @@ def generate_occupancy_report():
         elif r["status"] == "Under Maintenance":
             maintenance = maintenance + 1
 
-available = total_rooms - occupied - maintenance 
-if total_rooms > 0:
-    rate = occupied / total_rooms * 100 
-else: 
-    rate = 0
+        available = total_rooms - occupied - maintenance 
+        if total_rooms > 0:
+            rate = occupied / total_rooms * 100 
+        else: 
+            rate = 0
 
-print("Total rooms:", total_rooms)
-print("Occupied rooms:", occupied)
-print("Available rooms:", available)
-print("Rooms under maintenance:", maintenance) 
-print("Occupancy rate:", round(rate, 2), "%")
-return {
-    "total": total_rooms,
-    "occupied": occupied,
-    "available": available,
-    "maintenance": maintenance,
-    "rate": round(rate, 2)
-}
+        print("Total rooms:", total_rooms)
+        print("Occupied rooms:", occupied)
+        print("Available rooms:", available)
+        print("Rooms under maintenance:", maintenance) 
+        print("Occupancy rate:", round(rate, 2), "%")
+        return {
+            "total": total_rooms,
+            "occupied": occupied,
+            "available": available,
+            "maintenance": maintenance,
+            "rate": round(rate, 2)
+        }
 
 
 #--------- Revenue Report ---------------------------------------------
@@ -243,23 +243,23 @@ def generate_revenue_report():
     total = 0 
     for b in bookings:
         total = total + b["total"]
-print("Total Bookings:", len(bookings))
-print("Total Revenue: $" + str(total))
+        print("Total Bookings:", len(bookings))
+        print("Total Revenue: $" + str(total))
 
-by_type = {}
-for b in bookings: 
-    room = find_rooms(b["rooms_id"])
-    if room:
-        t = room["type"]
-    else:
-        t = "Unknown"
-        if t in by_type:
-            by_type[t] = by_type[t] + b["total"]
-        else: 
-            by_type[t] = b["total"]
-    for t in by_type: 
-        print(t, ": $", by_type[t])
-    return by_type 
+    by_type = {}
+    for b in bookings: 
+        room = find_rooms(b["rooms_id"])
+        if room:
+            t = room["type"]
+        else:
+            t = "Unknown"
+            if t in by_type:
+                by_type[t] = by_type[t] + b["total"]
+            else: 
+                by_type[t] = b["total"]
+        for t in by_type: 
+            print(t, ": $", by_type[t])
+        return by_type 
 
 
 #--------- Full bookings report----------------------------------------
@@ -286,48 +286,48 @@ def generate_bookings_report():
 #---------- Export Bookings to csv ---------------------------------------
 def export_bookings_to_csv(filename="bookings_report.csv"):
     try:
-    f = open (filename, "w", newline="", encoding="utf-8")
-    writer = csv.writer(f)
-    writer.writerow([ 
-        "booking_id",
-        "guest_id",
-        "guest_name",
-        "room_id",
-        "room_type",
-        "check_in",
-        "check_out",
-        "nights",
-        "total"
-    ])
-    for b in bookings: 
-        guest = find_guest(b["guest_id"])
-        if guest:
-            guest_name = guest["name"]
-        else:
-            guest_name = "Unknown"
-        room = find_room(b["room_id"])
-        if room: 
-            room_type = room["type"]
-        else:
-            room_type = "Unknown"
+        f = open(filename, "w", newline="", encoding="utf-8")
+        writer = csv.writer(f)
         writer.writerow([
-            b["booking_id"],
-            name,
-            b["guest_id"],
-            guest_name,
-            b["room_id"],
-            room_type,
-            b["check_in"],
-            b["check_out"],
-            b["nights"],
-            b["total"]
+            "Booking ID",
+            "Guest ID",
+            "Guest Name",
+            "Room ID",
+            "Room Type",
+            "Check In", 
+            "Check Out",
+            "Nights",
+            "Total"
         ])
-    f.close()
-    print("Bookings saved to", filename) 
-    return filename 
-except OSError as e:
-    print("File could not be saved:", e) 
-    return None 
+        for b in bookings:
+            guest = find_guest(b["guest_id"])
+            if guest:
+                guest_name = guest["name"] 
+            else: 
+                guest_name = "Unknown"
+            room = find_room(b["room_id"])
+            if room:
+                room_type = room["type"]
+            else:
+                room_type = "Unknown"    
+            writer.writerow([
+                b["booking_id"],
+                b["guest_id"],
+                b["guest_name"],
+                b["room_id"],
+                b["room_type"],
+                b["check_in"],
+                b["check_out"],
+                b["nights"],
+                b["total"]
+            ])
+        f.close()
+        print("Bookings report saved to", filename)
+        return filename
+    except OSError as e:
+        print("File could not be saved:", e)
+        return None
+
 
 
 #----------- Export Occupancy to csv ------------------------------------
@@ -342,19 +342,19 @@ def export_occupancy_to_csv(filename="occupancy_report.csv"):
             "maintenance",
             "occupancy_rate"
         ])
-        writer.writerow([
+        writer.writerow ([
             report["total"],
             report["occupied"],
             report["available"],
             report["maintenance"],
-            report["rate"
+            report["rate"]
         ])
         f.close()
         print("Occupancy report saved to", filename)
         return filename
-except OSError as e:
-    print("File could not be saved:", e)
-    return None
+    except OSError as e:
+        print("File could not be saved:", e)
+        return None
 
 
 
