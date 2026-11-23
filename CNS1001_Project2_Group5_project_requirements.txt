@@ -1,0 +1,5 @@
+# CNS1001 Project 2 — Hotel Reservation Management System (HRS)
+# No third-party Python packages are required.
+# All dependencies are part of the Python standard library.
+# Uses tkinter for the GUI (included with most Windows Python installations).
+# Run with Python 3.10 or later.
