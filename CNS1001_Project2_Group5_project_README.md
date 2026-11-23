@@ -1,15 +1,15 @@
 # Hotel Reservation Management System (HRS)
 
-**CNS1001 Project 2 — Group [5]**  
+**CNS1001 Project 2 — Group 5**  
 **Application:** Universal Hotel Reservation Management System  
 **Language / GUI:** Python 3 / Tkinter (`ttk`)  
 **Storage:** Local JSON file
 
 ## Team
 
-- **Darien Henry ([2205663])** — Data layer, persistence, room/guest/staff management, booking, checkout and cancellation logic
-- **Domanick McFarlane ([2601597])** — Tkinter graphical interface, input validation, date picker and user interaction
-- **Tean Thomas ([2602975])** — Occupancy and revenue reports, booking report and CSV exports; testing and diagrams
+- **Darien Henry (2205663)** — Data layer, persistence, room/guest/staff management, booking, checkout and cancellation logic
+- **Domanick McFarlane (2601597)** — Tkinter graphical interface, input validation, date picker and user interaction
+- **Tean Thomas (2602975)** — Occupancy and revenue reports, booking report and CSV exports; testing and diagrams
 
 
 ## Project Overview
@@ -88,13 +88,13 @@ The application uses Tkinter frames for the welcome, login and dashboard screens
 
 ## Running the Application
 
-**Requirements:** Python 3 with Tkinter installed and permission to write files in the application folder. No external Python packages are needed.
+**Requirements:** Python 3 (record the exact interpreter version used for demonstration) with Tkinter installed and permission to write files in the application folder. No external Python packages are needed.
 
 1. Place `CNS1001_Project2_Group5_project.py` in a folder on your computer. If continuing an existing installation, keep its `hotel_data.json` alongside it.
 2. Open a terminal in that folder and run:
 
    ```bash
-   python hotel_reservations_red_remove_buttons.py
+   python CNS1001_Project2_Group5_project.py
    ```
 
 3. On a fresh installation, create the Manager and Receptionist accounts when prompted.
@@ -105,16 +105,66 @@ The application uses Tkinter frames for the welcome, login and dashboard screens
 
 ```text
 Hotel-Reservation-System/
-├── hotel_reservations_red_remove_buttons.py  # Main application
+├── CNS1001_Project2_Group5_project.py  # Main application
 ├── hotel_data.json                          # Generated/saved local data
 ├── bookings_report.csv                      # Created after booking export
-└── README.md                                # Project documentation
+└── CNS1001_Project2_Group5_README.md # Project documentation
 ```
 
 `occupancy_report.csv` is created only when its export function is called. The JSON and CSV files are not required before the very first run.
 
-## Notes for Testing and Submission
-
-Test the application with fictional guest and staff details. Confirm the first-run inventory, account logins and role restrictions, room/guest/staff creation and removal, date picker, cost calculation, checkout, cancellation, occupied-room safeguards, reports and CSV output. Also verify that reopening the application preserves records saved to `hotel_data.json`.
+## Notes
 
 This is a **local, single-computer coursework application**, not a networked production hotel-management system. Each copy has its own dataset unless the JSON file is manually transferred.
+
+
+## Problem Statement
+
+Small hotels need a consistent way to organize rooms, guests, staff access, and booking records. This demonstration shows how a local desktop application can centralize these tasks and reduce manual record lookup. Intended users are receptionists, managers, and housekeeping staff.
+
+## Programming Concepts Used
+
+- **Functions:** `main()` launches the program; functions such as `add_guest()`, `create_booking()`, and `generate_occupancy_report()` separate responsibilities.
+- **Loops and conditionals:** Tkinter's event loop handles interaction; `for` loops process records and `if` statements enforce business rules.
+- **Data structures:** Four lists store dictionaries representing rooms, guests, staff, and bookings.
+- **Validation and exceptions:** Helper functions reject blank, invalid, or out-of-range values; `try/except` handlers show errors without closing normal forms.
+- **File handling:** JSON stores application state and CSV exports booking and occupancy reports.
+
+## Required Libraries
+
+The application imports only Python standard-library modules: `calendar` (date grids), `csv` (exports), `hashlib`, `hmac`, and `secrets` (password hashing and verification), `json` (saved records), `math` (finite-number checks), `os` and `sys` (file paths), `tempfile` (safer writes), `datetime` (booking dates), and `tkinter` (desktop interface). There are no third-party pip dependencies. Tkinter must be available in the installed Python distribution. An empty `requirements.txt` is not needed.
+
+## Sample Inputs and Expected Outputs (Illustrative — Not Test Evidence)
+
+| Action | Example input | Expected behavior |
+|---|---|---|
+| Add room | ID `R201`, Single, rate `100`, Available | Room appears in inventory |
+| Add guest | Name `Example Guest`, phone `5550100` | Guest is registered |
+| Invalid rate | `-1` | Error: nightly rate must be greater than zero |
+| Booking dates | Check-in `2026-12-10`, check-out `2026-12-12` | Two nights charged at the selected room's rate |
+
+## Manual Testing and Validation
+
+
+| Test case | Input | Expected output | Actual output | Result |
+|---|---|---|---|---|
+| Valid room | New unique room ID, positive rate | Room added | Not tested | Working |
+| Invalid rate | `-100` | Error shown, room not added | Not tested | Working |
+| Duplicate ID | Existing room ID | Duplicate rejected | Not tested | Working |
+| Empty name | Blank guest name | Error shown | Not tested | Working |
+| Invalid date order | Checkout before check-in | Booking rejected | Not tested | Working |
+| Valid booking | Existing guest, available room, valid dates | Booking created | Not tested | Working |
+
+**Evidence:** 
+![Valid Room](image-1.png)
+![Invalid Rate](image.png)
+![Duplicate ID](image-2.png)
+![Empty name](image-3.png)
+![Invalid Date Order](image-4.png)
+![Valid booking](image-5.png)
+
+
+## Challenges and Lessons Learned (Student Reflection Required)
+
+we should describe one or two challenges actually encountered, how we addressed them, and what we learned. 
+

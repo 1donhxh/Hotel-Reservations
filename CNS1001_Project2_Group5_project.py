@@ -1,7 +1,6 @@
 """CNS1001 Project 2 — Universal Hotel Reservation Management System (HRS).
 
-Integrated and optimized version of the supplied team project, aligned with
-hotel_reservations_calendar_picker.py.
+Group 5 hotel reservation application.
 
 Section 1: Data Layer & Business Logic — Darien Henry
 Section 2: GUI & Validation — Domanick McFarlane
@@ -1281,6 +1280,11 @@ def export_occupancy_to_csv(filename="occupancy_report.csv"):
         return None
 
 
-if __name__ == "__main__":
+def main():
+    """Launch the hotel reservation application and its Tkinter event loop."""
     app = HotelApp()
     app.mainloop()
+
+
+if __name__ == "__main__":
+    main()
