@@ -449,12 +449,12 @@ def update_room_status(room_id, new_status):
 def configure_styles():
     style = ttk.Style()
     style.theme_use("clam")
-    style.configure("btn_style.TButton", background=BG, foreground="#101820",
+    style.configure("btn_style.TButton", background="#52a4db", foreground="#101820",
                     font=("Arial", 12, "bold"), padding=(10, 8))
     style.map("btn_style.TButton", background=[("pressed", DARK), ("active", "#6497b1")])
     # Larger, bold labels for the nine dashboard actions and sidebar navigation.
     style.configure("Action.TButton", font=("Arial", 14, "bold"),
-                    foreground="#101820", background=BG, padding=(12, 12))
+                    foreground="#101820", background="#52a4db", padding=(12, 12))
     style.map("Action.TButton", background=[("pressed", DARK), ("active", "#6497b1")],
               foreground=[("disabled", "#666666"), ("!disabled", "#101820")])
     style.configure("Nav.TButton", font=("Arial", 14, "bold"),
